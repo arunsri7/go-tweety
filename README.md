@@ -3,13 +3,13 @@
 Go-tweety is a CLI twiiter app which lets you perform tweet-operations on the terminal
 
 ## Project Setup 
-    git clone git@github.com:arunsri7/go-tweety.git
-    cd go-tweety
-    create a dot env file and add the folowing variables
+    * git clone git@github.com:arunsri7/go-tweety.git
+    * cd go-tweety
+    * create a dot env file and add the folowing variables
         * MONGO_URI(your mongo db atlas URI)
         * DB_NAME 
         * DOCUMENT_NAME 
-    Go install
+    * Go install
 
 ## Usage
     * "go-tweety --help" to check all the commands available
