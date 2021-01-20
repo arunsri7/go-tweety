@@ -1,6 +1,6 @@
 # go-tweety
 
-Go-tweety is a twiiter app which lets you do tweet-operations from the CLI
+Go-tweety is a CLI twiiter app which lets you perform tweet-operations on the terminal
 
 ## Project Setup 
     git clone git@github.com:arunsri7/go-tweety.git
@@ -12,8 +12,8 @@ Go-tweety is a twiiter app which lets you do tweet-operations from the CLI
     Go install
 
 ## Usage
-    * Use **go-tweety --help** to check all the commands available
-    * Use **go-tweety <command name> -- help** to get the spefic command info and usage
+    * "go-tweety --help" to check all the commands available
+    * "go-tweety <command name> -- help" to get the spefic command info and usage
 
 ## TODO
     * For Admin 
