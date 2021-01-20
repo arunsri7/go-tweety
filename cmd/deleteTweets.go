@@ -4,21 +4,23 @@ import (
 	"fmt"
 	"go-tweety/helper"
 	"go-tweety/model"
+	"strconv"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	"github.com/spf13/cobra"
 )
 
-// showTweetsCmd represents the showTweets command
-var showTweetsCmd = &cobra.Command{
-	Use:   "showTweets <username> <password>",
-	Short: "Displays your last 20 tweets",
+// deleteTweetsCmd represents the deleteTweets command
+var deleteTweetsCmd = &cobra.Command{
+	Use:   "deleteTweets <username> <password> <tweetID>",
+	Short: "Deletes the tweet with the given tweet id. Tweet Id can be obtained from show tweets command",
 	Run: func(cmd *cobra.Command, args []string) {
 		var userDetails model.User
 		userDetails = helper.GetUserDetails(args[0], args[1])
 		if helper.ValidatePassword(args[1], userDetails.Password) {
-			showTweets(userDetails.ConsumerKey, userDetails.ConsumerSecret,
+			tweetID, _ := strconv.ParseInt(args[2], 10, 64)
+			deleteTweets(tweetID, userDetails.ConsumerKey, userDetails.ConsumerSecret,
 				userDetails.AccessToken, userDetails.AccessSecret)
 		} else {
 			fmt.Println("Incorrect username or password")
@@ -27,11 +29,11 @@ var showTweetsCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(showTweetsCmd)
+	rootCmd.AddCommand(deleteTweetsCmd)
 }
 
-// Displays recent tweets
-func showTweets(consumerKey []byte, consumerSecret []byte, accessToken []byte, accessSecret []byte) {
+// deletes the tweet given the tweet id
+func deleteTweets(tweetID int64, consumerKey []byte, consumerSecret []byte, accessToken []byte, accessSecret []byte) {
 	consumerKey = helper.Decrypt(consumerKey, "apiKey")
 	consumerSecret = helper.Decrypt(consumerSecret, "apiSecret")
 	accessToken = helper.Decrypt(accessToken, "accessToken")
@@ -44,15 +46,11 @@ func showTweets(consumerKey []byte, consumerSecret []byte, accessToken []byte, a
 	// Twitter client
 	client := twitter.NewClient(httpClient)
 	// Home Timeline
-	tweets, _, err := client.Timelines.HomeTimeline(&twitter.HomeTimelineParams{
-		Count: 20, //Number of tweets to return
-	})
+	tweet, _, err := client.Statuses.Destroy(tweetID, &twitter.StatusDestroyParams{})
 
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		for index, tweet := range tweets {
-			fmt.Println("Tweet no:", index, "--->", tweet.Text, "------- Tweet ID:", tweet.ID)
-		}
+		fmt.Printf("deleted the tweet with ID %d sucessfully", tweet.ID)
 	}
 }

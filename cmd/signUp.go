@@ -4,8 +4,10 @@ import (
 	"context"
 	"go-tweety/helper"
 	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,25 +17,15 @@ import (
 
 // signUpCmd represents the signUp command
 var signUpCmd = &cobra.Command{
-	Use:   "signUp",
-	Short: "Add your api keys and access token keys to sign up ",
+	Use:   "signUp <username> <password> <consumerKey> <consumerSecret> <accessToken> <accessSecret>",
+	Short: "Adds your username,password,api keys and access token keys to the db in encrypted form for signup ",
 	Run: func(cmd *cobra.Command, args []string) {
 		password := helper.Encrypt([]byte(args[1]), "password")
 		consumerKey := helper.Encrypt([]byte(args[2]), "apiKey")
 		consumerSecret := helper.Encrypt([]byte(args[3]), "apiSecret")
 		accessToken := helper.Encrypt([]byte(args[4]), "accessToken")
 		accessSecret := helper.Encrypt([]byte(args[5]), "accessSecret")
-		// fmt.Println(password, consumerKey, consumerSecret, accessToken, accessSecret)
 		signUp(args[0], password, consumerKey, consumerSecret, accessToken, accessSecret)
-		// fmt.Println("Starting the application...")
-		// ciphertext := helper.Encrypt([]byte("Hello World"), "password")
-		// fmt.Printf("Encrypted: %x\n", password)
-		// plaintext := helper.Decrypt(ciphertext, "password")
-		// fmt.Printf("Decrypted: %s\n", plaintext)
-		// consumerKey := "866BamNTPZbBy0nNN1bE11MJE"
-		// consumerSecret := "nHhYNZN5Fmexa7REBGsN1I3WzCOWj6X9y7ofNqE6BUOHYLtAN4"
-		// accessToken := "1304015396710658048-LvE0kCyu8eTJLOxBIUHO2RjCYy4T4t"
-		// accessSecret := "l2BohcWYGx5ATA9PppePmZfDC8fp7yHWUXibES5q57OjL"
 	},
 }
 
@@ -43,11 +35,20 @@ func init() {
 
 func signUp(username string, password []byte, consumerKey []byte, consumerSecret []byte,
 	accessToken []byte, accessSecret []byte) {
+
+	//Load Env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+	mongoURI := os.Getenv("MONGO_URI")
 	// Database Config
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
-		`mongodb+srv://admin:admin@cluster0.1vpl5.mongodb.net/goTweety?retryWrites=true&w=majority`,
+		mongoURI,
 	))
 	if err != nil {
 		log.Fatal(err)
