@@ -1,12 +1,24 @@
 package helper
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"go-tweety/model"
 	"io"
+	"log"
+	"os"
+	"time"
+
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 func CreateHash(key string) string {
@@ -46,4 +58,56 @@ func Decrypt(data []byte, passphrase string) []byte {
 		panic(err.Error())
 	}
 	return plaintext
+}
+
+//decrypt and validate user password
+func ValidatePassword(password string, mongoDBPass []byte) bool {
+	decryptedPass := Decrypt(mongoDBPass, "password")
+	if password == string(decryptedPass) {
+		return true
+	}
+	return false
+
+}
+
+//getUserDetails returns the object from the db given the username and password
+func GetUserDetails(username string, password string) model.User {
+	// Database Config
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//Load Env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	mongoURI := os.Getenv("MONGO_URI")
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
+		mongoURI,
+	))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Connect(ctx)
+	//Cancel context to avoid memory leak
+
+	// Ping our db connection
+	err = client.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		log.Fatal("Couldn't connect to the database", err)
+	} else {
+		log.Println("Connected!")
+	}
+	defer client.Disconnect(ctx)
+	quickstartDatabase := client.Database("goTweety")
+	productsCollection := quickstartDatabase.Collection("users")
+	var userDetails model.User
+	if err = productsCollection.FindOne(ctx,
+		bson.M{"username": username}).Decode(&userDetails); err != nil {
+		fmt.Println(err)
+	}
+	return userDetails
 }
