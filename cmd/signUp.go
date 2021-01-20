@@ -65,8 +65,8 @@ func signUp(username string, password []byte, consumerKey []byte, consumerSecret
 	}
 	defer client.Disconnect(ctx)
 
-	quickstartDatabase := client.Database("goTweety")
-	usersCollection := quickstartDatabase.Collection("users")
+	quickstartDatabase := client.Database(os.Getenv("DB_NAME"))
+	usersCollection := quickstartDatabase.Collection(os.Getenv("DOCUMENT_NAME"))
 	// dateUpdated := time.Now()
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	filter := bson.D{{"username", username}}

@@ -102,10 +102,10 @@ func GetUserDetails(username string, password string) model.User {
 		log.Println("Connected!")
 	}
 	defer client.Disconnect(ctx)
-	quickstartDatabase := client.Database("goTweety")
-	productsCollection := quickstartDatabase.Collection("users")
+	quickstartDatabase := client.Database(os.Getenv("DB_NAME"))
+	usersCollection := quickstartDatabase.Collection(os.Getenv("DOCUMENT_NAME"))
 	var userDetails model.User
-	if err = productsCollection.FindOne(ctx,
+	if err = usersCollection.FindOne(ctx,
 		bson.M{"username": username}).Decode(&userDetails); err != nil {
 		fmt.Println(err)
 	}
