@@ -67,7 +67,6 @@ func ValidatePassword(password string, mongoDBPass []byte) bool {
 		return true
 	}
 	return false
-
 }
 
 //getUserDetails returns the object from the db given the username and password
@@ -107,7 +106,7 @@ func GetUserDetails(username string, password string) model.User {
 	var userDetails model.User
 	if err = usersCollection.FindOne(ctx,
 		bson.M{"username": username}).Decode(&userDetails); err != nil {
-		fmt.Println(err)
+		fmt.Println(err, "error getting user details")
 	}
 	return userDetails
 }
