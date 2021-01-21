@@ -174,3 +174,40 @@ func NewTweet(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(res)
 	}
 }
+
+// deletes the tweet given the tweet id
+func DeleteTweet(w http.ResponseWriter, r *http.Request) {
+
+	var req model.DeleteTweet
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		fmt.Println(err, "decode err")
+	}
+	fmt.Println(req)
+	userDetails := helper.GetUserDetails(req.Username, req.Password)
+
+	if !helper.ValidatePassword(req.Password, userDetails.Password) {
+		fmt.Println("Incorrect username or password")
+	}
+
+	consumerKey := helper.Decrypt(userDetails.ConsumerKey, "apiKey")
+	consumerSecret := helper.Decrypt(userDetails.ConsumerSecret, "apiSecret")
+	accessToken := helper.Decrypt(userDetails.AccessToken, "accessToken")
+	accessSecret := helper.Decrypt(userDetails.AccessSecret, "accessSecret")
+
+	config := oauth1.NewConfig(string(consumerKey), string(consumerSecret))
+	token := oauth1.NewToken(string(accessToken), string(accessSecret))
+	httpClient := config.Client(oauth1.NoContext, token)
+
+	// Twitter client
+	client := twitter.NewClient(httpClient)
+	// Home Timeline
+	_, _, err = client.Statuses.Destroy(req.TweetID, &twitter.StatusDestroyParams{})
+
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode("Tweet Deleted Sucessfully")
+	}
+}

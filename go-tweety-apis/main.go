@@ -15,5 +15,6 @@ func main() {
 	router.HandleFunc("/signUp", handler.SignUp)
 	router.HandleFunc("/showTweets", handler.ShowTweets)
 	router.HandleFunc("/newTweet", handler.NewTweet)
+	router.HandleFunc("/deleteTweet", handler.DeleteTweet)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

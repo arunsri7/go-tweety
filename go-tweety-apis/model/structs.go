@@ -1,7 +1,6 @@
 package model
 
 type SignUp struct {
-	ID             string `json:_id`
 	Username       string `json:username`
 	Password       string `json:password`
 	ConsumerKey    []byte `json:consumerKey`
@@ -31,6 +30,12 @@ type ShowTweets struct {
 
 type NewTweet struct {
 	Tweet    string `json:tweet`
+	Username string `json:username`
+	Password string `json:password`
+}
+
+type DeleteTweet struct {
+	TweetID  int64  `json:tweetid`
 	Username string `json:username`
 	Password string `json:password`
 }
