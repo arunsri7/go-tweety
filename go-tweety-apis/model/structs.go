@@ -28,3 +28,9 @@ type ShowTweets struct {
 	Tweet   string
 	TweetID int64
 }
+
+type NewTweet struct {
+	Tweet    string `json:tweet`
+	Username string `json:username`
+	Password string `json:password`
+}

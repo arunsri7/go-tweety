@@ -22,7 +22,7 @@ import (
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	//decoding the request
-	var req model.SignUp
+	var req model.User
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		fmt.Println(err, "decode err")
@@ -101,6 +101,7 @@ func ShowTweets(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err, "decode err")
 	}
 	userDetails := helper.GetUserDetails(req.Username, req.Password)
+
 	if !helper.ValidatePassword(req.Password, userDetails.Password) {
 		fmt.Println("Incorrect username or password")
 	}
@@ -130,6 +131,45 @@ func ShowTweets(w http.ResponseWriter, r *http.Request) {
 			res[index].Tweet = tweet.Text
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(res)
+	}
+}
+
+// Asks for user input and posts it on twitter
+func NewTweet(w http.ResponseWriter, r *http.Request) {
+
+	var req model.NewTweet
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		fmt.Println(err, "decode err")
+	}
+	userDetails := helper.GetUserDetails(req.Username, req.Password)
+
+	if !helper.ValidatePassword(req.Password, userDetails.Password) {
+		fmt.Println("Incorrect username or password")
+	}
+
+	consumerKey := helper.Decrypt(userDetails.ConsumerKey, "apiKey")
+	consumerSecret := helper.Decrypt(userDetails.ConsumerSecret, "apiSecret")
+	accessToken := helper.Decrypt(userDetails.AccessToken, "accessToken")
+	accessSecret := helper.Decrypt(userDetails.AccessSecret, "accessSecret")
+
+	config := oauth1.NewConfig(string(consumerKey), string(consumerSecret))
+	token := oauth1.NewToken(string(accessToken), string(accessSecret))
+	httpClient := config.Client(oauth1.NoContext, token)
+
+	// Twitter client
+	client := twitter.NewClient(httpClient)
+
+	// Send a Tweet
+	tweet, _, err := client.Statuses.Update(req.Tweet, nil)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		var res model.ShowTweets
+		res.Tweet = tweet.Text
+		res.TweetID = tweet.ID
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(res)
 	}
